@@ -83,7 +83,10 @@ module ReverbNationScrape
             return band_data
     end
     module_function :get_rn_band_info
+
+    def reverb_nation_data(artist, state)
+        ReverbNationScrape.get_rn_band_info(ReverbNationScrape.search_by_artist(artist, state))
 end
 
-puts ReverbNationScrape.get_rn_band_info(ReverbNationScrape.search_by_artist("Romeo Cologne", "GA"))
 
+#puts Scrape.get_rn_band_info(Scrape.search_by_artist("Romeo Cologne", "GA"))
