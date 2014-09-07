@@ -41,7 +41,7 @@ app.get('/band_info', function(req, res){
   // });
   collection.findOne(req.query, function(err, doc){
     if(err) throw err;
-    res.send(doc);
+    res.json(doc);
   });
 });
 
