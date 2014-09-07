@@ -1,5 +1,7 @@
+#!/usr/bin/env ruby
 require 'rubygems'
 require "awesome_print"
+require 'json'
 
 require './rn_scrape'
 require './lastfm'
@@ -11,15 +13,25 @@ require 'mongo'
 include Mongo
 
 
+# connecting to the database
+client = MongoClient.new # defaults to localhost:27017
+db     = client['rockscor']
+col    = db['artists']
 
 
 def get_all_info(artist, state)#, venue_city)
-    band_info = {"name" => artist, "state" => state}
+
+    band_info = {"name" => artist.downcase, "state" => state.upcase}
+
+    existing = col.findOne(band_info)
+    return existing unless existing.nil?
+
+    #if not in database, start scrappin'
 
     band_info = Reverbnation::get_data(band_info)
     band_info = Lastfm::get_tags(band_info)
     band_info = Lastfm::get_comments(band_info)
-    band_info = Lastfm::get_top_tracks(band_info)
+    band_info = Lastfm::get_top_tracks(band_info)#this is such the wrong way to do this
     band_info = Lastfm::get_info(band_info)
 
     #band_info = {"name"=>"radio birds", "state"=>"GA", "profiles"=>{"twitter"=>["http://www.twitter.com/JKthelostboys"], "instagram"=>["http://www.instagram.com/radiobirdsmusic"], "youtube"=>["https://www.youtube.com/channel/UCIe-z0uVuQk6cGbF5jboasA", "https://www.youtube.com/user/RadioBirds"], "facebook"=>["http://www.facebook.com/pages/page/548141405228907", "https://www.facebook.com/jazzyfreshnow", "http://www.new.facebook.com/radiobirds"], "artistwebsite"=>["http://www.radiobirds.net"], "amazon"=>["http://www.amazon.com/Radio-Birds-EP/dp/B00E0PV3WK"], "soundcloud"=>["https://soundcloud.com/radiobirds"], "spotify"=>["https://play.spotify.com/artist/1ryNYwggxeRXYGR2547Hrc"], "social_retailer_icons_24-merch_1"=>["http://www.tinyurl.com/jkstore"], "lastfm"=>["http://www.last.fm/music/Radio+Birds"]}, "stats"=>{"SongPlays"=>2, "VideoPlays"=>242, "TotalFans"=>3, "ReverbNationFans"=>332, "FacebookLikes"=>1, "TwitterFollowers"=>389, "YouTubeSubscribers"=>697, "WidgetImpressions"=>7, "lastfm_listeners"=>142, "lastfm_playcount"=>1037}, "tags"=>{}, "comments"=>[], "top_tracks"=>[], "mbid"=>"5026702e-2041-4128-8cd5-c5a58a9f6fb1", "similar"=>{"artist"=>[{"name"=>"Molly Gunner", "url"=>"http://www.last.fm/music/Molly+Gunner", "image"=>[{"#text"=>"", "size"=>"small"}, {"#text"=>"", "size"=>"medium"}, {"#text"=>"", "size"=>"large"}, {"#text"=>"", "size"=>"extralarge"}, {"#text"=>"", "size"=>"mega"}]}, {"name"=>"Melodime", "url"=>"http://www.last.fm/music/Melodime", "image"=>[{"#text"=>"http://userserve-ak.last.fm/serve/34/100873239.jpg", "size"=>"small"}, {"#text"=>"http://userserve-ak.last.fm/serve/64/100873239.jpg", "size"=>"medium"}, {"#text"=>"http://userserve-ak.last.fm/serve/126/100873239.jpg", "size"=>"large"}, {"#text"=>"http://userserve-ak.last.fm/serve/252/100873239.jpg", "size"=>"extralarge"}, {"#text"=>"http://userserve-ak.last.fm/serve/500/100873239/Melodime+012_602_602.jpg", "size"=>"mega"}]}, {"name"=>"Amy Gerhartz", "url"=>"http://www.last.fm/music/Amy+Gerhartz", "image"=>[{"#text"=>"http://userserve-ak.last.fm/serve/34/83228963.jpg", "size"=>"small"}, {"#text"=>"http://userserve-ak.last.fm/serve/64/83228963.jpg", "size"=>"medium"}, {"#text"=>"http://userserve-ak.last.fm/serve/126/83228963.jpg", "size"=>"large"}, {"#text"=>"http://userserve-ak.last.fm/serve/252/83228963.jpg", "size"=>"extralarge"}, {"#text"=>"http://userserve-ak.last.fm/serve/500/83228963/Amy+Gerhartz+Photography+by+Isaac+Gorden.jpg", "size"=>"mega"}]}, {"name"=>"Ohad Benchetrit & Justin Small", "url"=>"http://www.last.fm/music/Ohad+Benchetrit+&+Justin+Small", "image"=>[{"#text"=>"", "size"=>"small"}, {"#text"=>"", "size"=>"medium"}, {"#text"=>"", "size"=>"large"}, {"#text"=>"", "size"=>"extralarge"}, {"#text"=>"", "size"=>"mega"}]}, {"name"=>"Griffin Young", "url"=>"http://www.last.fm/music/Griffin+Young", "image"=>[{"#text"=>"", "size"=>"small"}, {"#text"=>"", "size"=>"medium"}, {"#text"=>"", "size"=>"large"}, {"#text"=>"", "size"=>"extralarge"}, {"#text"=>"", "size"=>"mega"}]}]}}
@@ -34,6 +46,8 @@ def get_all_info(artist, state)#, venue_city)
 
     #band_info = {"name"=>"radio birds", "state"=>"GA", "profiles"=>{"twitter"=>["http://www.twitter.com/JKthelostboys"], "instagram"=>["http://www.instagram.com/radiobirdsmusic"], "youtube"=>["https://www.youtube.com/channel/UCIe-z0uVuQk6cGbF5jboasA", "https://www.youtube.com/user/RadioBirds"], "facebook"=>["http://www.facebook.com/pages/page/548141405228907", "https://www.facebook.com/jazzyfreshnow", "http://www.new.facebook.com/radiobirds"], "artistwebsite"=>["http://www.radiobirds.net"], "amazon"=>["http://www.amazon.com/Radio-Birds-EP/dp/B00E0PV3WK"], "soundcloud"=>["https://soundcloud.com/radiobirds"], "spotify"=>["https://play.spotify.com/artist/1ryNYwggxeRXYGR2547Hrc"], "social_retailer_icons_24-merch_1"=>["http://www.tinyurl.com/jkstore"], "lastfm"=>["http://www.last.fm/music/Radio+Birds"]}, "stats"=>{"SongPlays"=>2, "VideoPlays"=>242, "TotalFans"=>3, "ReverbNationFans"=>332, "FacebookLikes"=>1, "TwitterFollowers"=>389, "YouTubeSubscribers"=>697, "WidgetImpressions"=>7, "lastfm_listeners"=>142, "lastfm_playcount"=>1037, "hotttnesss"=>0.420204, "discovery"=>0.40223219514948083, "familiarity"=>0.251068}, "tags"=>{}, "comments"=>[], "top_tracks"=>[], "mbid"=>"5026702e-2041-4128-8cd5-c5a58a9f6fb1", "similar"=>{"artist"=>[{"name"=>"Molly Gunner", "url"=>"http://www.last.fm/music/Molly+Gunner", "image"=>[{"#text"=>"", "size"=>"small"}, {"#text"=>"", "size"=>"medium"}, {"#text"=>"", "size"=>"large"}, {"#text"=>"", "size"=>"extralarge"}, {"#text"=>"", "size"=>"mega"}]}, {"name"=>"Melodime", "url"=>"http://www.last.fm/music/Melodime", "image"=>[{"#text"=>"http://userserve-ak.last.fm/serve/34/100873239.jpg", "size"=>"small"}, {"#text"=>"http://userserve-ak.last.fm/serve/64/100873239.jpg", "size"=>"medium"}, {"#text"=>"http://userserve-ak.last.fm/serve/126/100873239.jpg", "size"=>"large"}, {"#text"=>"http://userserve-ak.last.fm/serve/252/100873239.jpg", "size"=>"extralarge"}, {"#text"=>"http://userserve-ak.last.fm/serve/500/100873239/Melodime+012_602_602.jpg", "size"=>"mega"}]}, {"name"=>"Amy Gerhartz", "url"=>"http://www.last.fm/music/Amy+Gerhartz", "image"=>[{"#text"=>"http://userserve-ak.last.fm/serve/34/83228963.jpg", "size"=>"small"}, {"#text"=>"http://userserve-ak.last.fm/serve/64/83228963.jpg", "size"=>"medium"}, {"#text"=>"http://userserve-ak.last.fm/serve/126/83228963.jpg", "size"=>"large"}, {"#text"=>"http://userserve-ak.last.fm/serve/252/83228963.jpg", "size"=>"extralarge"}, {"#text"=>"http://userserve-ak.last.fm/serve/500/83228963/Amy+Gerhartz+Photography+by+Isaac+Gorden.jpg", "size"=>"mega"}]}, {"name"=>"Ohad Benchetrit & Justin Small", "url"=>"http://www.last.fm/music/Ohad+Benchetrit+&+Justin+Small", "image"=>[{"#text"=>"", "size"=>"small"}, {"#text"=>"", "size"=>"medium"}, {"#text"=>"", "size"=>"large"}, {"#text"=>"", "size"=>"extralarge"}, {"#text"=>"", "size"=>"mega"}]}, {"name"=>"Griffin Young", "url"=>"http://www.last.fm/music/Griffin+Young", "image"=>[{"#text"=>"", "size"=>"small"}, {"#text"=>"", "size"=>"medium"}, {"#text"=>"", "size"=>"large"}, {"#text"=>"", "size"=>"extralarge"}, {"#text"=>"", "size"=>"mega"}]}]}, "images"=>[], "location"=>nil, "videos"=>[{:title=>"Radio Birds - \"Time for a Change\"", :url=>"http://www.youtube.com/watch?v=XIK027xzIOA&feature=youtube_gdata_player", :site=>"youtube.com", :date_found=>"2013-11-17T00:00:00", :image_url=>"http://i.ytimg.com/vi/XIK027xzIOA/default.jpg", :id=>"b0e68e18d065a925c1a22bdfd210d64a"}], "articles"=>{"reviews"=>[], "news"=>[], "blogs"=>[{:name=>"ATL Concert Roundup — July 29-August 2", :url=>"http://latestdisgrace.com/2014/atl-concert-roundup-july-29-august-2", :date_posted=>"2014-07-29T15:10:44", :date_found=>"2014-07-29T00:00:00", :summary=>"color and texture--and then figuring out how they all go together. Innovators. Pioneers. Whatever you want to call them, Boris makes music that challenges the notion of boundaries and limits while maintaining an aesthetic that's uniquely their own. THE BEST OF THE REST: Baby Baby w/ Death on Two Wheels, <span>Radio Birds</span> Tuesday, July 28 Music Room - 327 Edgewood Avenue SE in Atlanta 30312 Admission $5 Mourning Cloak w/ Torch Runner, Peasent Tuesday, July 29 529 - 529 Flat Shoals Avenue in Atlanta 30316 Donations accepted at door Gunpowder Gray w/ Scarlett Wednesday, July 30 The Earl - 466 Flat Shoals", :id=>"64e7602825b9c85f8e6977300b406364"}]}} 
 
+
+
     band_info
 end
 
@@ -46,22 +60,9 @@ end
 # LOCAL!!!!!!
 # gig history is big
 
-# require './songkick'
-# puts SongkickScrape::get_events("radio birds")
 
+puts get_all_info(ARGV[0], ARGV[1]).to_json
 
-
-
-
-band_info = {"name"=>"radio birds", "state"=>"GA", "profiles"=>{"twitter"=>["http://www.twitter.com/JKthelostboys"], "instagram"=>["http://www.instagram.com/radiobirdsmusic"], "youtube"=>["https://www.youtube.com/channel/UCIe-z0uVuQk6cGbF5jboasA", "https://www.youtube.com/user/RadioBirds"], "facebook"=>["http://www.facebook.com/pages/page/548141405228907", "https://www.facebook.com/jazzyfreshnow", "http://www.new.facebook.com/radiobirds"], "artistwebsite"=>["http://www.radiobirds.net"], "amazon"=>["http://www.amazon.com/Radio-Birds-EP/dp/B00E0PV3WK"], "soundcloud"=>["https://soundcloud.com/radiobirds"], "spotify"=>["https://play.spotify.com/artist/1ryNYwggxeRXYGR2547Hrc"], "social_retailer_icons_24-merch_1"=>["http://www.tinyurl.com/jkstore"], "lastfm"=>["http://www.last.fm/music/Radio+Birds"]}, "stats"=>{"SongPlays"=>2, "VideoPlays"=>242, "TotalFans"=>3, "ReverbNationFans"=>332, "FacebookLikes"=>1, "TwitterFollowers"=>389, "YouTubeSubscribers"=>697, "WidgetImpressions"=>7, "lastfm_listeners"=>142, "lastfm_playcount"=>1037, "hotttnesss"=>0.420204, "discovery"=>0.40223219514948083, "familiarity"=>0.251068}, "tags"=>{}, "comments"=>[], "top_tracks"=>[], "mbid"=>"5026702e-2041-4128-8cd5-c5a58a9f6fb1", "similar"=>{"artist"=>[{"name"=>"Molly Gunner", "url"=>"http://www.last.fm/music/Molly+Gunner", "image"=>[{"#text"=>"", "size"=>"small"}, {"#text"=>"", "size"=>"medium"}, {"#text"=>"", "size"=>"large"}, {"#text"=>"", "size"=>"extralarge"}, {"#text"=>"", "size"=>"mega"}]}, {"name"=>"Melodime", "url"=>"http://www.last.fm/music/Melodime", "image"=>[{"#text"=>"http://userserve-ak.last.fm/serve/34/100873239.jpg", "size"=>"small"}, {"#text"=>"http://userserve-ak.last.fm/serve/64/100873239.jpg", "size"=>"medium"}, {"#text"=>"http://userserve-ak.last.fm/serve/126/100873239.jpg", "size"=>"large"}, {"#text"=>"http://userserve-ak.last.fm/serve/252/100873239.jpg", "size"=>"extralarge"}, {"#text"=>"http://userserve-ak.last.fm/serve/500/100873239/Melodime+012_602_602.jpg", "size"=>"mega"}]}, {"name"=>"Amy Gerhartz", "url"=>"http://www.last.fm/music/Amy+Gerhartz", "image"=>[{"#text"=>"http://userserve-ak.last.fm/serve/34/83228963.jpg", "size"=>"small"}, {"#text"=>"http://userserve-ak.last.fm/serve/64/83228963.jpg", "size"=>"medium"}, {"#text"=>"http://userserve-ak.last.fm/serve/126/83228963.jpg", "size"=>"large"}, {"#text"=>"http://userserve-ak.last.fm/serve/252/83228963.jpg", "size"=>"extralarge"}, {"#text"=>"http://userserve-ak.last.fm/serve/500/83228963/Amy+Gerhartz+Photography+by+Isaac+Gorden.jpg", "size"=>"mega"}]}, {"name"=>"Ohad Benchetrit & Justin Small", "url"=>"http://www.last.fm/music/Ohad+Benchetrit+&+Justin+Small", "image"=>[{"#text"=>"", "size"=>"small"}, {"#text"=>"", "size"=>"medium"}, {"#text"=>"", "size"=>"large"}, {"#text"=>"", "size"=>"extralarge"}, {"#text"=>"", "size"=>"mega"}]}, {"name"=>"Griffin Young", "url"=>"http://www.last.fm/music/Griffin+Young", "image"=>[{"#text"=>"", "size"=>"small"}, {"#text"=>"", "size"=>"medium"}, {"#text"=>"", "size"=>"large"}, {"#text"=>"", "size"=>"extralarge"}, {"#text"=>"", "size"=>"mega"}]}]}, "images"=>[], "location"=>nil, "videos"=>[{:title=>"Radio Birds - \"Time for a Change\"", :url=>"http://www.youtube.com/watch?v=XIK027xzIOA&feature=youtube_gdata_player", :site=>"youtube.com", :date_found=>"2013-11-17T00:00:00", :image_url=>"http://i.ytimg.com/vi/XIK027xzIOA/default.jpg", :id=>"b0e68e18d065a925c1a22bdfd210d64a"}], "articles"=>{"reviews"=>[], "news"=>[], "blogs"=>[{:name=>"ATL Concert Roundup — July 29-August 2", :url=>"http://latestdisgrace.com/2014/atl-concert-roundup-july-29-august-2", :date_posted=>"2014-07-29T15:10:44", :date_found=>"2014-07-29T00:00:00", :summary=>"color and texture--and then figuring out how they all go together. Innovators. Pioneers. Whatever you want to call them, Boris makes music that challenges the notion of boundaries and limits while maintaining an aesthetic that's uniquely their own. THE BEST OF THE REST: Baby Baby w/ Death on Two Wheels, <span>Radio Birds</span> Tuesday, July 28 Music Room - 327 Edgewood Avenue SE in Atlanta 30312 Admission $5 Mourning Cloak w/ Torch Runner, Peasent Tuesday, July 29 529 - 529 Flat Shoals Avenue in Atlanta 30316 Donations accepted at door Gunpowder Gray w/ Scarlett Wednesday, July 30 The Earl - 466 Flat Shoals", :id=>"64e7602825b9c85f8e6977300b406364"}]}} 
-
-
-# connecting to the database
-client = MongoClient.new # defaults to localhost:27017
-db     = client['rockscor']
-col    = db['artists']
-
-col.insert band_info
 
 
 # # finding documents
