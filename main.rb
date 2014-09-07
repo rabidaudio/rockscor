@@ -16,7 +16,7 @@ def get_all_info(artist, state)
 
 
 
-    band_info["events"] = Songkick::get_events(artist)
+    band_info["events"] = SongkickScrape::get_events(artist)
 
 
 
@@ -25,10 +25,13 @@ def get_all_info(artist, state)
     band_info
 end
 
-puts get_all_info("Romeo Cologne", "GA")
+puts get_all_info("radio birds", "GA")
 
 
 
 # dont trust accuracy
 # LOCAL!!!!!!
 # gig history is big
+
+# require './songkick'
+# puts SongkickScrape::get_events("radio birds")

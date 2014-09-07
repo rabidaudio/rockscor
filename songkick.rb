@@ -2,8 +2,8 @@ require 'rubygems'
 #require 'songkickr'
 require 'songkick'
 require './api_keys'
-require 'active_support/all'
-require './to_hash_monkeypatch'
+#require 'active_support/all'
+#require './to_hash_monkeypatch'
 
 
 module SongkickScrape
@@ -19,21 +19,21 @@ module SongkickScrape
         # REMOTE.artists_gigography(results.first.id, per_page: '100', page: '1').results #.to_hash #TODO parse in reasonable system
 
         #TODO Songkick sucks at resolving colisions. need to verify correct artist
+        events = {}
         id = REMOTE.search_artist(artist)["resultsPage"]["results"]["artist"].first["id"]
         page = 1
         result = REMOTE.artist_gigography(id)["resultsPage"]
-        events = result["results"]["events"]
-        #puts result["totalEntries"]
-        #puts events
-        while page*50 < result["totalEntries"].to_i
-            page+=1
+        events = result["results"]["event"]
+        # puts result["totalEntries"]
+        # puts events
+        while (page*50 < result["totalEntries"].to_i)
+            page=page+1
             new_result = REMOTE.artist_gigography(id, page: page)
-            # puts new_result["resultsPage"]["results"]
-            events.concat(new_result["resultsPage"]["results"]) #if !new_result["resultsPage"]["results"]["events"].nil?
-            
+            #puts new_result["resultsPage"]["results"]
+            events.concat(new_result["resultsPage"]["results"]["event"]) #if !new_result["resultsPage"]["results"]["events"].nil?
         end
 
-        events
+        return events
     end
 
 end
