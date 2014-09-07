@@ -61,7 +61,7 @@ end
 # gig history is big
 
 
-puts get_all_info(ARGV[0], ARGV[1]).to_json
+ap get_all_info(ARGV[0], ARGV[1]).to_json
 
 
 
