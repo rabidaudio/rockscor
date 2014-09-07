@@ -32,6 +32,7 @@ module Echonest
 #        end
 
         stuff = result.first
+	return band_info if stuff.nil?
         band_info["stats"] = {} if band_info["stats"].nil?
 
         band_info["stats"]["hotttnesss"]    = stuff.hotttnesss
