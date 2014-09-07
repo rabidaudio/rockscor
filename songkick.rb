@@ -21,6 +21,7 @@ module SongkickScrape
         #TODO Songkick sucks at resolving colisions. need to verify correct artist
         events = {}
         id = REMOTE.search_artist(band_info["name"])["resultsPage"]["results"]["artist"].first["id"]
+        band_info["skid"] = id
 
         page = 1
         result = REMOTE.artist_gigography(id)["resultsPage"]
