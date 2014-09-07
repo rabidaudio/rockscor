@@ -17,7 +17,7 @@ module Nextbigsound
         bandinfo["mbid"] = result.first.music_brainz_id if band_info["mbid"].nil? and !result.first.music_brainz_id.nil?
         id = result.first.id.to_i
         band_info["profiles"] = {} if band_info["profiles"].nil?
-        band_info["profiles"]["nextbigsound"] = [] if band_info["profiles"]["lastfm"].nil?
+        band_info["profiles"]["nextbigsound"] = [] if band_info["profiles"]["nextbigsound"].nil?
         band_info["profiles"]["nextbigsound"].push( "band_info https://www.nextbigsound.com/artist/#{id}/overview" )
 
         result = NextBigSoundLite::Metric.profile(id, :start => Date.today.prev_month(3))
@@ -28,19 +28,19 @@ module Nextbigsound
         band_info["social_graph"]["plays"] = {}
         result.plays.to_hash.each do |key,value| # convert to normal unix timestamps
             #in the form of {time => count}
-            band_info["social_graph"]["plays"][(key.to_i*1000*60*60*24)] = value
+            band_info["social_graph"]["plays"][(key.to_i*1000*60*60*24).to_s] = value
         end
 
         band_info["social_graph"]["fans"] = {}
         result.fans.to_hash.each do |key,value| # convert to normal unix timestamps
             #in the form of {time => count}
-            band_info["social_graph"]["fans"][(key.to_i*1000*60*60*24)] = value
+            band_info["social_graph"]["fans"][(key.to_i*1000*60*60*24).to_s] = value
         end
 
         band_info["social_graph"]["comments"] = {}
         result.comments.to_hash.each do |key,value| # convert to normal unix timestamps
             #in the form of {time => count}
-            band_info["social_graph"]["comments"][(key.to_i*1000*60*60*24)] = value
+            band_info["social_graph"]["comments"][(key.to_i*1000*60*60*24).to_s] = value
         end
 
         return band_info

@@ -22,14 +22,14 @@ module Echonest
             'hotttnesss', 'discovery', 'familiarity', 'genre', 'artist_location', 'blogs', 'news', 'reviews',
             'songs', 'urls', 'video', 'years_active']}
 
-        unless band_info["skid"].nil?
-            options[:id] = "songkick:artist:"+band_info["skid"].to_s
-            result = Echowrap.artist_profile(options)
-        else
+#        unless band_info["skid"].nil?
+#            options[:id] = "songkick:artist:"+band_info["skid"].to_s
+#            result = Echowrap.artist_profile(options)
+#        else
             options[:name] = band_info["name"]
             #causes error: options[:artist_location] = "region:"+band_info["state"]
             result = Echowrap.artist_search(options)
-        end
+#        end
 
         stuff = result.first
         band_info["stats"] = {} if band_info["stats"].nil?
