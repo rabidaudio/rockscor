@@ -19,5 +19,5 @@ app.get('/band_info', function(req, res){
 });
 
 
-app.listen(8080);
+app.listen(80);
 console.log("running");
